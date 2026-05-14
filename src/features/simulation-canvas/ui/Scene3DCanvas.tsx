@@ -96,7 +96,7 @@ const Scene3DCanvas = ({ editor }: { editor: Editor }) => {
   const controlsRef = useRef<OrbitControlsImpl | null>(null);
   return (
     <div className="block size-full" style={{ background: '#f7f5f1' }}>
-      <Canvas camera={{ position: [8, 8, 8], fov: 50 }} dpr={[1, 2]} gl={{ antialias: true }}>
+      <Canvas camera={{ position: [8, 8, 8], fov: 50 }} dpr={[1, 2]} gl={{ antialias: true, preserveDrawingBuffer: true }}>
         <ambientLight intensity={0.55} />
         <directionalLight position={[10, 12, 8]} intensity={0.9} castShadow />
         <directionalLight position={[-6, 4, -4]} intensity={0.25} />

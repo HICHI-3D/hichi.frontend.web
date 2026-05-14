@@ -5,6 +5,7 @@ import { Icon } from '@shared/ui';
 type Props = {
   editor: Editor;
   onFitView: () => void;
+  onScreenshot: () => void;
 };
 
 /* ── 재사용 버튼 ────────────────────────────────── */
@@ -33,7 +34,7 @@ const ToolBtn = ({ active, onClick, children, title }: IconBtnProps) => (
 
 /* ── FooterNav ──────────────────────────────────── */
 
-const FooterNav = ({ editor, onFitView }: Props) => {
+const FooterNav = ({ editor, onFitView, onScreenshot }: Props) => {
   const {
     viewport,
     viewMode,
@@ -118,8 +119,8 @@ const FooterNav = ({ editor, onFitView }: Props) => {
         >
           <Icon name="lock" alt="화면 잠금" className="size-28" />
         </ToolBtn>
-        <ToolBtn onClick={onFitView} title="화면 맞춤">
-          <Icon name="camera" alt="화면 맞춤" className="size-28" />
+        <ToolBtn onClick={onScreenshot} title="스크린샷">
+          <Icon name="camera" alt="스크린샷" className="size-28" />
         </ToolBtn>
         <ToolBtn onClick={() => zoomAt(1.2)} title="확대">
           <Icon name="zoomIn" alt="확대" className="size-28" />
@@ -127,8 +128,8 @@ const FooterNav = ({ editor, onFitView }: Props) => {
         <ToolBtn onClick={() => zoomAt(1 / 1.2)} title="축소">
           <Icon name="zoomOut" alt="축소" className="size-28" />
         </ToolBtn>
-        <ToolBtn onClick={onFitView} title="전체 보기">
-          <Icon name="zoomFit" alt="전체 보기" className="size-28" />
+        <ToolBtn onClick={onFitView} title="화면맞춤">
+          <Icon name="zoomFit" alt="화면맞춤" className="size-28" />
         </ToolBtn>
 
         <div className="mx-4 w-px self-stretch bg-gray-400" />

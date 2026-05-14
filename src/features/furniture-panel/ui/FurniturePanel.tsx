@@ -2,6 +2,7 @@ import type { FurnitureRecord } from '@entities/furniture';
 import { Furniture3DModal } from '@features/furniture-3d';
 import { FurnitureScanModal } from '@features/furniture-scan';
 import { listFurniture } from '@shared/api';
+import { config } from '@shared/config';
 import { useCallback, useEffect, useState } from 'react';
 
 import FurnitureThumbnail from './FurnitureThumbnail';
@@ -45,6 +46,20 @@ const FurniturePanel = ({ }: { onClose: () => void }) => {
   }, []);
 
   useEffect(() => { void refresh(); }, [refresh]);
+
+  useEffect(() => {
+    const sseUrl = `${config.apiBaseUrl}/api/furniture/events/stream`;
+    const eventSource = new EventSource(sseUrl);
+
+    eventSource.addEventListener('furniture_updated', () => {
+      console.log('Received furniture_updated event, refreshing list...');
+      void refresh();
+    });
+
+    return () => {
+      eventSource.close();
+    };
+  }, [refresh]);
 
   const filteredItems = items.filter((item) => item.name.includes(searchQuery));
   const displayItems = activeTab === '전체' ? [...MOCK_ITEMS, ...filteredItems] : filteredItems;

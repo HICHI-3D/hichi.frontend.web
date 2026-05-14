@@ -16,6 +16,72 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import type { NavId } from '../model/types';
 
+/** 캔버스 영역을 캡처해서 PNG로 로컬 다운로드 */
+const captureCanvasArea = (container: HTMLElement) => {
+  // 3D 모드: WebGL canvas에서 직접 이미지 추출
+  const webglCanvas = container.querySelector('canvas') as HTMLCanvasElement | null;
+  if (webglCanvas) {
+    // WebGL은 preserveDrawingBuffer가 false일 수 있으므로 toDataURL 전에 렌더 요청
+    try {
+      const dataUrl = webglCanvas.toDataURL('image/png');
+      downloadDataUrl(dataUrl);
+    } catch {
+      // preserveDrawingBuffer 이슈 시 html2canvas 대신 직접 읽기 시도
+      alert('3D 캔버스 캡처에 실패했습니다.');
+    }
+    return;
+  }
+
+  // 2D 모드: SVG → Canvas → PNG
+  const svgEl = container.querySelector('svg') as SVGSVGElement | null;
+  if (!svgEl) return;
+
+  const clone = svgEl.cloneNode(true) as SVGSVGElement;
+  const rect = svgEl.getBoundingClientRect();
+  clone.setAttribute('width', String(rect.width));
+  clone.setAttribute('height', String(rect.height));
+  // 배경색 추가
+  const bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  bgRect.setAttribute('width', '100%');
+  bgRect.setAttribute('height', '100%');
+  bgRect.setAttribute('fill', '#f7f5f1');
+  clone.insertBefore(bgRect, clone.firstChild);
+
+  const serializer = new XMLSerializer();
+  const svgString = serializer.serializeToString(clone);
+  const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+  const url = URL.createObjectURL(svgBlob);
+
+  const img = new Image();
+  img.onload = () => {
+    const dpr = window.devicePixelRatio || 1;
+    const canvas = document.createElement('canvas');
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    const ctx = canvas.getContext('2d')!;
+    ctx.scale(dpr, dpr);
+    ctx.drawImage(img, 0, 0, rect.width, rect.height);
+    URL.revokeObjectURL(url);
+
+    const pngUrl = canvas.toDataURL('image/png');
+    downloadDataUrl(pngUrl);
+  };
+  img.src = url;
+};
+
+const downloadDataUrl = (dataUrl: string) => {
+  const now = new Date();
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const filename = `hichi_screenshot_${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}.png`;
+
+  const link = document.createElement('a');
+  link.download = filename;
+  link.href = dataUrl;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
 const AppShell = () => {
   const [activeNav, setActiveNav] = useState<NavId | null>('drawing');
   const [activeTool, setActiveTool] = useState<string | null>(null);
@@ -56,6 +122,12 @@ const AppShell = () => {
     if (!el) return;
     editor.fitView(el.clientWidth, el.clientHeight);
   };
+
+  const handleScreenshot = useCallback(() => {
+    const el = canvasAreaRef.current;
+    if (!el) return;
+    captureCanvasArea(el);
+  }, []);
 
   const handleUploadFloorPlan = useCallback(
     async (file: File) => {
@@ -123,7 +195,7 @@ const AppShell = () => {
                 <SimulationCanvas editor={editor} />
               )}
             </div>
-            <FooterNav editor={editor} onFitView={fitToView} />
+            <FooterNav editor={editor} onFitView={fitToView} onScreenshot={handleScreenshot} />
           </div>
         </div>
       </div>
