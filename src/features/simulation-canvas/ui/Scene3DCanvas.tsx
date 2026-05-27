@@ -10,9 +10,9 @@ import FurnitureMesh3D from './FurnitureMesh3D';
 
 const WALL_HEIGHT = 2.4;
 const WALL_THICKNESS = 0.12;
-const COLOR_WALL = '#cfcfcf';
-const COLOR_COLUMN = '#6a6a6a';
-const COLOR_ROOM = '#e6e0f5';
+const COLOR_WALL = '#ffffff';
+const COLOR_COLUMN = '#ffffff';
+const COLOR_ROOM = '#ffffff';
 
 const WallMesh = ({ shape }: { shape: Extract<Shape, { type: 'wall' }> }) => {
   const sx = shape.start.x / 1000, sz = shape.start.y / 1000, ex = shape.end.x / 1000, ez = shape.end.y / 1000;

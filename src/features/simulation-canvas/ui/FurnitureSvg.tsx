@@ -25,7 +25,7 @@ const SofaSvg = ({ w, d, isSelected }: { w: number; d: number; isSelected: boole
   return (
     <g>
       {/* 등받이 */}
-      <rect x={-w / 2} y={-d / 2} width={w} height={backD} rx={backD * 0.3} fill="#4f46e5" stroke={isSelected ? '#5b48d6' : '#3730a3'} strokeWidth={isSelected ? 40 : 8} />
+      <rect x={-w / 2} y={-d / 2} width={w} height={backD} rx={backD * 0.3} fill="#4f46e5" stroke={isSelected ? 'hsl(258, 73%, 74%)' : '#3730a3'} strokeWidth={isSelected ? 40 : 8} />
       {/* 쿠션들 */}
       {Array.from({ length: cushionCount }).map((_, i) => (
         <rect
@@ -56,7 +56,7 @@ const TableSvg = ({ w, d, isSelected }: { w: number; d: number; isSelected: bool
       {/* 상판 그림자 */}
       <rect x={-w / 2 + 10} y={-d / 2 + 10} width={w} height={d} rx={w * 0.03} fill="#78350f" opacity={0.25} />
       {/* 상판 */}
-      <rect x={-w / 2} y={-d / 2} width={w} height={d} rx={w * 0.03} fill="#92400e" stroke={isSelected ? '#5b48d6' : '#78350f'} strokeWidth={isSelected ? 40 : 8} />
+      <rect x={-w / 2} y={-d / 2} width={w} height={d} rx={w * 0.03} fill="#92400e" stroke={isSelected ? 'hsl(258, 73%, 74%)' : '#78350f'} strokeWidth={isSelected ? 40 : 8} />
       {/* 나무결 */}
       <line x1={-w / 2 + legInset} y1={-d / 2 + d * 0.25} x2={w / 2 - legInset} y2={-d / 2 + d * 0.25} stroke="#a16207" strokeWidth={4} opacity={0.3} />
       <line x1={-w / 2 + legInset} y1={-d / 2 + d * 0.55} x2={w / 2 - legInset} y2={-d / 2 + d * 0.55} stroke="#a16207" strokeWidth={4} opacity={0.25} />
@@ -78,9 +78,9 @@ const ChairSvg = ({ w, d, isSelected }: { w: number; d: number; isSelected: bool
   return (
     <g>
       {/* 등받이 */}
-      <rect x={-w / 2} y={-d / 2} width={w} height={backD} rx={w * 0.08} fill="#475569" stroke={isSelected ? '#5b48d6' : '#334155'} strokeWidth={isSelected ? 40 : 6} />
+      <rect x={-w / 2} y={-d / 2} width={w} height={backD} rx={w * 0.08} fill="#475569" stroke={isSelected ? 'hsl(258, 73%, 74%)' : '#334155'} strokeWidth={isSelected ? 40 : 6} />
       {/* 좌석 */}
-      <rect x={-w / 2 + w * 0.05} y={-d / 2 + backD} width={w * 0.9} height={d - backD} rx={w * 0.06} fill="#64748b" stroke={isSelected ? '#5b48d6' : '#475569'} strokeWidth={isSelected ? 40 : 6} />
+      <rect x={-w / 2 + w * 0.05} y={-d / 2 + backD} width={w * 0.9} height={d - backD} rx={w * 0.06} fill="#64748b" stroke={isSelected ? 'hsl(258, 73%, 74%)' : '#475569'} strokeWidth={isSelected ? 40 : 6} />
       {/* 다리 */}
       <circle cx={-w / 2 + legInset} cy={-d / 2 + d * 0.3} r={legSize} fill="#334155" />
       <circle cx={w / 2 - legInset} cy={-d / 2 + d * 0.3} r={legSize} fill="#334155" />
@@ -97,7 +97,7 @@ const BedSvg = ({ w, d, isSelected }: { w: number; d: number; isSelected: boolea
   return (
     <g>
       {/* 프레임 */}
-      <rect x={-w / 2} y={-d / 2} width={w} height={d} rx={w * 0.02} fill="#b45309" stroke={isSelected ? '#5b48d6' : '#92400e'} strokeWidth={isSelected ? 40 : 8} />
+      <rect x={-w / 2} y={-d / 2} width={w} height={d} rx={w * 0.02} fill="#b45309" stroke={isSelected ? 'hsl(258, 73%, 74%)' : '#92400e'} strokeWidth={isSelected ? 40 : 8} />
       {/* 헤드보드 */}
       <rect x={-w / 2} y={-d / 2} width={w} height={headH} rx={w * 0.02} fill="#92400e" />
       {/* 매트리스 */}
@@ -116,7 +116,7 @@ const BookshelfSvg = ({ w, d, isSelected }: { w: number; d: number; isSelected: 
   const pad = w * 0.05;
   return (
     <g>
-      <rect x={-w / 2} y={-d / 2} width={w} height={d} rx={w * 0.02} fill="#78716c" stroke={isSelected ? '#5b48d6' : '#57534e'} strokeWidth={isSelected ? 40 : 6} />
+      <rect x={-w / 2} y={-d / 2} width={w} height={d} rx={w * 0.02} fill="#78716c" stroke={isSelected ? 'hsl(258, 73%, 74%)' : '#57534e'} strokeWidth={isSelected ? 40 : 6} />
       {/* 선반칸 */}
       {[0.1, 0.35, 0.6, 0.82].map((ratio, i) => (
         <rect key={i} x={-w / 2 + pad} y={-d / 2 + d * ratio} width={w - pad * 2} height={d * 0.2} rx={w * 0.01} fill="#a8a29e" opacity={0.6} />
@@ -132,7 +132,7 @@ const BookshelfSvg = ({ w, d, isSelected }: { w: number; d: number; isSelected: 
 /** TV 스탠드 */
 const TvStandSvg = ({ w, d, isSelected }: { w: number; d: number; isSelected: boolean }) => (
   <g>
-    <rect x={-w / 2} y={-d / 2} width={w} height={d} rx={w * 0.03} fill="#44403c" stroke={isSelected ? '#5b48d6' : '#292524'} strokeWidth={isSelected ? 40 : 6} />
+    <rect x={-w / 2} y={-d / 2} width={w} height={d} rx={w * 0.03} fill="#44403c" stroke={isSelected ? 'hsl(258, 73%, 74%)' : '#292524'} strokeWidth={isSelected ? 40 : 6} />
     {/* 문 분리선 */}
     <line x1={0} y1={-d / 2 + d * 0.1} x2={0} y2={d / 2 - d * 0.1} stroke="#57534e" strokeWidth={4} />
     {/* 손잡이 */}
@@ -143,7 +143,7 @@ const TvStandSvg = ({ w, d, isSelected }: { w: number; d: number; isSelected: bo
 
 /** 기본 폴백 */
 const DefaultSvg = ({ w, d, isSelected, color }: { w: number; d: number; isSelected: boolean; color: string }) => (
-  <rect x={-w / 2} y={-d / 2} width={w} height={d} fill={color} fillOpacity={0.6} stroke={isSelected ? '#5b48d6' : color} strokeWidth={isSelected ? 40 : 10} vectorEffect="non-scaling-stroke" />
+  <rect x={-w / 2} y={-d / 2} width={w} height={d} fill={color} fillOpacity={0.6} stroke={isSelected ? 'hsl(258, 73%, 74%)' : color} strokeWidth={isSelected ? 40 : 10} vectorEffect="non-scaling-stroke" />
 );
 
 const renderers: Record<string, React.FC<{ w: number; d: number; isSelected: boolean }>> = {
@@ -169,12 +169,12 @@ const FurnitureSvg = ({ furniture, isSelected, zoom }: Props) => {
       {isSelected && (
         <>
           {/* 선택 표시 테두리 */}
-          <rect x={-width / 2 - 20} y={-depth / 2 - 20} width={width + 40} height={depth + 40} fill="none" stroke="#5b48d6" strokeWidth={3} strokeDasharray="20 10" vectorEffect="non-scaling-stroke" rx={20} />
+          <rect x={-width / 2 - 20} y={-depth / 2 - 20} width={width + 40} height={depth + 40} fill="none" stroke="hsl(258, 73%, 74%)" strokeWidth={3} strokeDasharray="20 10" vectorEffect="non-scaling-stroke" rx={20} />
           {/* 회전 핸들 */}
-          <circle r={40} cx={width / 2 + 100} cy={0} fill="#5b48d6" style={{ cursor: 'pointer' }} />
+          <circle r={40} cx={width / 2 + 100} cy={0} fill="hsl(258, 73%, 74%)" style={{ cursor: 'pointer' }} />
         </>
       )}
-      <text y={depth / 2 + 150} fontSize={12 / zoom} textAnchor="middle" fill="#474645" style={{ pointerEvents: 'none' }}>{name}</text>
+      <text y={depth / 2 + 150} fontSize={12 / zoom} textAnchor="middle" fill="hsl(258, 73%, 74%)" style={{ pointerEvents: 'none' }}>{name}</text>
     </g>
   );
 };

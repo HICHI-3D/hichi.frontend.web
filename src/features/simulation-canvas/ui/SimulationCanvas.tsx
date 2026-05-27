@@ -40,7 +40,7 @@ const SimulationCanvas = ({ editor }: Props) => {
   } = editor;
 
   const hasBackground = backgroundImage !== null;
-  const wallStrokeBase = hasBackground ? '#5b48d6' : '#474645';
+  const wallStrokeBase = 'hsl(258, 73%, 74%)';
   const wallStrokeWidth = hasBackground ? 6 : 10;
 
   const svgRef = useRef<SVGSVGElement>(null);
@@ -211,24 +211,24 @@ const SimulationCanvas = ({ editor }: Props) => {
       const d = pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x} ${p.y}`).join(' ');
       return (
         <g>
-          <path d={d} fill="none" stroke="#a88aed" strokeWidth={8} strokeDasharray="16 8" vectorEffect="non-scaling-stroke" />
-          {draftPoints.map((p, i) => <circle key={i} cx={p.x} cy={p.y} r={50} fill="#a88aed" />)}
+          <path d={d} fill="none" stroke="hsl(258, 73%, 74%)" strokeWidth={8} strokeDasharray="16 8" vectorEffect="non-scaling-stroke" />
+          {draftPoints.map((p, i) => <circle key={i} cx={p.x} cy={p.y} r={50} fill="hsl(258, 73%, 74%)" />)}
         </g>
       );
     }
     const first = draftPoints[0];
     if (mode === 'wall') {
-      return <line x1={first.x} y1={first.y} x2={hoverPoint.x} y2={hoverPoint.y} stroke="#a88aed" strokeWidth={8} strokeDasharray="16 8" vectorEffect="non-scaling-stroke" />;
+      return <line x1={first.x} y1={first.y} x2={hoverPoint.x} y2={hoverPoint.y} stroke="hsl(258, 73%, 74%)" strokeWidth={8} strokeDasharray="16 8" vectorEffect="non-scaling-stroke" />;
     }
     if (mode === 'aux-line' || mode === 'measurement') {
-      return <line x1={first.x} y1={first.y} x2={hoverPoint.x} y2={hoverPoint.y} stroke="#a88aed" strokeWidth={2} strokeDasharray="8 6" vectorEffect="non-scaling-stroke" />;
+      return <line x1={first.x} y1={first.y} x2={hoverPoint.x} y2={hoverPoint.y} stroke="hsl(258, 73%, 74%)" strokeWidth={2} strokeDasharray="8 6" vectorEffect="non-scaling-stroke" />;
     }
     if (mode === 'rect-column') {
-      return <rect x={Math.min(first.x, hoverPoint.x)} y={Math.min(first.y, hoverPoint.y)} width={Math.abs(hoverPoint.x - first.x)} height={Math.abs(hoverPoint.y - first.y)} fill="rgba(168,138,237,0.2)" stroke="#a88aed" strokeWidth={2} strokeDasharray="8 6" vectorEffect="non-scaling-stroke" />;
+      return <rect x={Math.min(first.x, hoverPoint.x)} y={Math.min(first.y, hoverPoint.y)} width={Math.abs(hoverPoint.x - first.x)} height={Math.abs(hoverPoint.y - first.y)} fill="hsla(258, 73%, 74%, 0.2)" stroke="hsl(258, 73%, 74%)" strokeWidth={2} strokeDasharray="8 6" vectorEffect="non-scaling-stroke" />;
     }
     if (mode === 'circle-column') {
       const r = Math.hypot(hoverPoint.x - first.x, hoverPoint.y - first.y);
-      return <circle cx={first.x} cy={first.y} r={r} fill="rgba(168,138,237,0.2)" stroke="#a88aed" strokeWidth={2} strokeDasharray="8 6" vectorEffect="non-scaling-stroke" />;
+      return <circle cx={first.x} cy={first.y} r={r} fill="hsla(258, 73%, 74%, 0.2)" stroke="hsl(258, 73%, 74%)" strokeWidth={2} strokeDasharray="8 6" vectorEffect="non-scaling-stroke" />;
     }
     return null;
   };
@@ -247,10 +247,10 @@ const SimulationCanvas = ({ editor }: Props) => {
       case 'wall': return <line key={s.id} x1={s.start.x} y1={s.start.y} x2={s.end.x} y2={s.end.y} stroke={stroke} strokeWidth={wallStrokeWidth} strokeLinecap="round" vectorEffect="non-scaling-stroke" {...shapeProps} />;
       case 'room': {
         const d = s.points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x} ${p.y}`).join(' ') + ' Z';
-        return <path key={s.id} d={d} fill={fill ?? 'rgba(168,138,237,0.1)'} stroke={stroke} strokeWidth={6} strokeLinejoin="round" vectorEffect="non-scaling-stroke" {...shapeProps} />;
+        return <path key={s.id} d={d} fill={fill ?? 'hsla(258, 73%, 74%, 0.1)'} stroke={stroke} strokeWidth={6} strokeLinejoin="round" vectorEffect="non-scaling-stroke" {...shapeProps} />;
       }
-      case 'rect-column': return <rect key={s.id} x={s.x} y={s.y} width={s.w} height={s.h} fill={fill ?? '#474645'} stroke={stroke} strokeWidth={2} vectorEffect="non-scaling-stroke" {...shapeProps} />;
-      case 'circle-column': return <circle key={s.id} cx={s.cx} cy={s.cy} r={s.r} fill={fill ?? '#474645'} stroke={stroke} strokeWidth={2} vectorEffect="non-scaling-stroke" {...shapeProps} />;
+      case 'rect-column': return <rect key={s.id} x={s.x} y={s.y} width={s.w} height={s.h} fill={fill ?? 'hsl(258, 73%, 74%)'} stroke={stroke} strokeWidth={2} vectorEffect="non-scaling-stroke" {...shapeProps} />;
+      case 'circle-column': return <circle key={s.id} cx={s.cx} cy={s.cy} r={s.r} fill={fill ?? 'hsl(258, 73%, 74%)'} stroke={stroke} strokeWidth={2} vectorEffect="non-scaling-stroke" {...shapeProps} />;
       case 'aux-line': return <line key={s.id} x1={s.start.x} y1={s.start.y} x2={s.end.x} y2={s.end.y} stroke={stroke} strokeWidth={1.5} strokeDasharray="6 6" vectorEffect="non-scaling-stroke" {...shapeProps} />;
       case 'measurement': {
         const mid = { x: (s.start.x + s.end.x) / 2, y: (s.start.y + s.end.y) / 2 };
