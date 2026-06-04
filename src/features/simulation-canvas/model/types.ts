@@ -8,7 +8,9 @@ export type DrawingMode =
   | 'aux-line'
   | 'measurement'
   | 'delete'
-  | 'select';
+  | 'select'
+  | 'region'
+  | 'door';
 
 export type FurnitureType = 'sofa' | 'table' | 'chair' | 'bed' | 'bookshelf' | 'tv-stand';
 
@@ -24,6 +26,24 @@ export type FurnitureInstance = {
   color: string;
 };
 
+/**
+ * 영역 카테고리 — 원룸 내부의 sub-region 구분용.
+ * `room` shape 와 의미가 다르다: `room` 은 자유 polygon 으로 그린 단순 도형(면적),
+ * `region` 은 그 안의 욕실/주방/거실/침실 같은 의미적 구역.
+ */
+export type RegionCategory =
+  | 'bathroom'
+  | 'kitchen'
+  | 'living'
+  | 'bedroom'
+  | 'other';
+
+/** 한 region 의 벽지/바닥 마감재. 별도 finishes 맵에 regionId → RegionFinish 로 저장. */
+export type RegionFinish = {
+  wallpaperColor?: string;
+  floorColor?: string;
+};
+
 export type Shape =
   | { id: string; type: 'wall'; start: Point; end: Point }
   | { id: string; type: 'room'; points: Point[] }
@@ -37,7 +57,14 @@ export type Shape =
     }
   | { id: string; type: 'circle-column'; cx: number; cy: number; r: number }
   | { id: string; type: 'aux-line'; start: Point; end: Point }
-  | { id: string; type: 'measurement'; start: Point; end: Point };
+  | { id: string; type: 'measurement'; start: Point; end: Point }
+  | {
+      id: string;
+      type: 'region';
+      category: RegionCategory;
+      points: Point[];
+    }
+  | { id: string; type: 'door'; start: Point; end: Point };
 
 export type Viewport = {
   panX: number;
@@ -76,7 +103,28 @@ export const toolLabelToMode = (label: string | null): DrawingMode | null => {
       return 'measurement';
     case '선택':
       return 'select';
+    case '영역 그리기':
+      return 'region';
+    case '문 그리기':
+      return 'door';
     default:
       return null;
   }
+};
+
+export const REGION_CATEGORY_LABELS: Record<RegionCategory, string> = {
+  bathroom: '욕실',
+  kitchen: '주방',
+  living: '거실',
+  bedroom: '침실',
+  other: '기타',
+};
+
+/** 영역 카테고리별 시각 색상 (반투명 fill) — region 자체 식별용. 마감재 색과는 별개. */
+export const REGION_CATEGORY_COLORS: Record<RegionCategory, string> = {
+  bathroom: 'hsla(200, 70%, 60%, 0.18)',
+  kitchen: 'hsla(30, 80%, 60%, 0.18)',
+  living: 'hsla(140, 50%, 60%, 0.18)',
+  bedroom: 'hsla(280, 60%, 65%, 0.18)',
+  other: 'hsla(0, 0%, 55%, 0.15)',
 };

@@ -5,6 +5,8 @@ import type {
   DrawingMode,
   FurnitureInstance,
   Point,
+  RegionCategory,
+  RegionFinish,
   Shape,
   Unit,
   ViewMode,
@@ -18,21 +20,33 @@ export type Editor = ReturnType<typeof useEditor>;
 type EditorState = {
   shapes: Shape[];
   placedFurniture: FurnitureInstance[];
+  /**
+   * regionId → 벽지/바닥 색.
+   * region 도형 자체와 분리된 별도 맵 (사용자 결정 2026-05-27).
+   * region 삭제 시 같이 청소되며 history undo/redo 자연 통합.
+   */
+  regionFinishes: Record<string, RegionFinish>;
 };
 
 export function useEditor() {
   const [state, setState] = useState<EditorState>({
     shapes: [],
     placedFurniture: [],
+    regionFinishes: {},
   });
   const [history, setHistory] = useState<EditorState[]>([]);
   const [future, setFuture] = useState<EditorState[]>([]);
 
-  const { shapes, placedFurniture } = state;
+  const { shapes, placedFurniture, regionFinishes } = state;
 
   const [selectedFurnitureId, setSelectedFurnitureId] = useState<string | null>(
     null,
   );
+  /** 공간 환경 패널이 마감재 적용 대상으로 쓰는 선택된 region. */
+  const [selectedRegionId, setSelectedRegionId] = useState<string | null>(null);
+  /** 'region' 모드에서 새 region 그릴 때 부여할 카테고리. 패널이 set 한다. */
+  const [pendingRegionCategory, setPendingRegionCategory] =
+    useState<RegionCategory>('other');
   const [mode, setMode] = useState<DrawingMode | null>(null);
   const [draftPoints, setDraftPoints] = useState<Point[]>([]);
   const [hoverPoint, setHoverPoint] = useState<Point | null>(null);
@@ -95,12 +109,17 @@ export function useEditor() {
 
   const removeShape = useCallback(
     (id: string) => {
+      // region 을 지우면 마감재 맵도 dangling 안 되게 같이 청소
+      const nextFinishes = { ...state.regionFinishes };
+      delete nextFinishes[id];
       commitState({
         ...state,
         shapes: state.shapes.filter((s) => s.id !== id),
+        regionFinishes: nextFinishes,
       });
+      if (selectedRegionId === id) setSelectedRegionId(null);
     },
-    [commitState, state],
+    [commitState, state, selectedRegionId],
   );
 
   /** 외부에서 도형들을 한꺼번에 추가 (예: 도면 이미지 파싱 결과) */
@@ -114,8 +133,28 @@ export function useEditor() {
 
   /** 모든 도형 삭제 */
   const clearShapes = useCallback(() => {
-    commitState({ ...state, shapes: [] });
+    commitState({ ...state, shapes: [], regionFinishes: {} });
+    setSelectedRegionId(null);
   }, [commitState, state]);
+
+  /* region finishes */
+  const setRegionFinish = useCallback(
+    (regionId: string, patch: Partial<RegionFinish>) => {
+      const prev = state.regionFinishes[regionId] ?? {};
+      commitState({
+        ...state,
+        regionFinishes: {
+          ...state.regionFinishes,
+          [regionId]: { ...prev, ...patch },
+        },
+      });
+    },
+    [commitState, state],
+  );
+
+  const selectRegion = useCallback((id: string | null) => {
+    setSelectedRegionId(id);
+  }, []);
 
   /* furniture helpers */
   const addFurniture = useCallback(
@@ -163,6 +202,9 @@ export function useEditor() {
     setMode(next);
     setDraftPoints([]);
     if (next !== 'select') setSelectedFurnitureId(null);
+    // 영역 그리기/문 그리기 모드 진입 시 region 선택은 유지하지 않음
+    // (선택된 region 의 마감재 색 적용 흐름과 캔버스 클릭 흐름이 섞이지 않게)
+    if (next === 'region' || next === 'door') setSelectedRegionId(null);
   }, []);
 
   /* interaction — commit point for current mode */
@@ -178,18 +220,29 @@ export function useEditor() {
       setDraftPoints((pts) => {
         const points = [...pts, world];
 
-        if (mode === 'room') {
-          // close when clicking near first point (3+ points)
+        // polygon 그리기 — room 과 region 은 동일한 인터랙션(3+ 점 후 첫 점 근처 클릭으로 close).
+        // 의미가 다르므로 shape type 은 분리. (사용자 결정 2026-05-27)
+        if (mode === 'room' || mode === 'region') {
           if (points.length >= 3) {
             const first = points[0];
             const dx = world.x - first.x;
             const dy = world.y - first.y;
             if (Math.hypot(dx, dy) < 300) {
-              commitShape({
-                id: uid(),
-                type: 'room',
-                points: points.slice(0, -1),
-              });
+              const closedPoints = points.slice(0, -1);
+              if (mode === 'room') {
+                commitShape({
+                  id: uid(),
+                  type: 'room',
+                  points: closedPoints,
+                });
+              } else {
+                commitShape({
+                  id: uid(),
+                  type: 'region',
+                  category: pendingRegionCategory,
+                  points: closedPoints,
+                });
+              }
               return [];
             }
           }
@@ -204,6 +257,8 @@ export function useEditor() {
             commitShape({ id: uid(), type: 'aux-line', start: a, end: b });
           } else if (mode === 'measurement') {
             commitShape({ id: uid(), type: 'measurement', start: a, end: b });
+          } else if (mode === 'door') {
+            commitShape({ id: uid(), type: 'door', start: a, end: b });
           } else if (mode === 'rect-column') {
             commitShape({
               id: uid(),
@@ -228,15 +283,22 @@ export function useEditor() {
         return points;
       });
     },
-    [mode, commitShape],
+    [mode, commitShape, pendingRegionCategory],
   );
 
   const finishDraft = useCallback(() => {
     if (mode === 'room' && draftPoints.length >= 3) {
       commitShape({ id: uid(), type: 'room', points: draftPoints });
+    } else if (mode === 'region' && draftPoints.length >= 3) {
+      commitShape({
+        id: uid(),
+        type: 'region',
+        category: pendingRegionCategory,
+        points: draftPoints,
+      });
     }
     setDraftPoints([]);
-  }, [mode, draftPoints, commitShape]);
+  }, [mode, draftPoints, commitShape, pendingRegionCategory]);
 
   const cancelDraft = useCallback(() => setDraftPoints([]), []);
 
@@ -303,11 +365,12 @@ export function useEditor() {
         if (
           s.type === 'wall' ||
           s.type === 'aux-line' ||
-          s.type === 'measurement'
+          s.type === 'measurement' ||
+          s.type === 'door'
         ) {
           visit(s.start);
           visit(s.end);
-        } else if (s.type === 'room') {
+        } else if (s.type === 'room' || s.type === 'region') {
           s.points.forEach(visit);
         } else if (s.type === 'rect-column') {
           visit({ x: s.x, y: s.y });
@@ -349,6 +412,7 @@ export function useEditor() {
         cancelDraft();
         setMode(null);
         setSelectedFurnitureId(null);
+        setSelectedRegionId(null);
       } else if (e.key === 'Enter') {
         finishDraft();
       } else if (e.key === 'Delete' || e.key === 'Backspace') {
@@ -365,7 +429,10 @@ export function useEditor() {
     // state
     shapes,
     placedFurniture,
+    regionFinishes,
     selectedFurnitureId,
+    selectedRegionId,
+    pendingRegionCategory,
     mode,
     draftPoints,
     hoverPoint,
@@ -382,6 +449,7 @@ export function useEditor() {
     setViewMode,
     setBackgroundImage,
     setShowDetectedWalls,
+    setPendingRegionCategory,
     // mode
     changeMode,
     // interactions
@@ -391,6 +459,9 @@ export function useEditor() {
     removeShape,
     addShapes,
     clearShapes,
+    // region finishes
+    setRegionFinish,
+    selectRegion,
     // furniture
     addFurniture,
     removeFurniture,
