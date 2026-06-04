@@ -1,6 +1,8 @@
 import { DrawingPanel } from '@features/drawing-panel';
 import { FurniturePanel } from '@features/furniture-panel';
+import { RoomEnvironmentPanel } from '@features/room-environment';
 import {
+  FurniturePropertiesPanel,
   parsedToShapes,
   Scene3DCanvas,
   SimulationCanvas,
@@ -163,12 +165,20 @@ const AppShell = () => {
         );
       }
 
+      // 업로드 성공 시 다음 단계(공간 환경)로 자동 전환 (사용자 결정 2026-05-28).
+      // 실패(throw) 시 이 코드 미도달 → 도면 그리기 패널 유지.
+      setActiveNav('environment');
+      setActiveTool(null);
+
       return { parser, wallCount };
     },
     [editor],
   );
 
-  const isPanelOpen = activeNav === 'drawing' || activeNav === 'furniture';
+  const isPanelOpen =
+    activeNav === 'drawing' ||
+    activeNav === 'environment' ||
+    activeNav === 'furniture';
 
   return (
     <div className="flex size-full">
@@ -184,15 +194,27 @@ const AppShell = () => {
               onUploadFloorPlan={handleUploadFloorPlan}
             />
           )}
+          {isPanelOpen && activeNav === 'environment' && (
+            <RoomEnvironmentPanel
+              editor={editor}
+              activeTool={activeTool}
+              onToolClick={handleToolClick}
+              onClose={handleClosePanel}
+            />
+          )}
           {isPanelOpen && activeNav === 'furniture' && (
             <FurniturePanel onClose={handleClosePanel} />
           )}
           <div className="min-w-0 min-h-0 w-full col flex-1 relative">
-            <div ref={canvasAreaRef} className="min-h-0 flex-1">
+            <div ref={canvasAreaRef} className="min-h-0 flex-1 relative">
               {editor.viewMode === '3D' ? (
                 <Scene3DCanvas editor={editor} />
               ) : (
                 <SimulationCanvas editor={editor} />
+              )}
+              {/* 2D 모드에서 선택된 가구의 치수/회전 입력 */}
+              {editor.viewMode === '2D' && (
+                <FurniturePropertiesPanel editor={editor} />
               )}
             </div>
             <FooterNav editor={editor} onFitView={fitToView} onScreenshot={handleScreenshot} />

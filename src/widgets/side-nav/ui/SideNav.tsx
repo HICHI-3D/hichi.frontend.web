@@ -10,6 +10,7 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   { id: 'drawing', icon: 'cube', label: '도면 그리기' },
+  { id: 'environment', icon: 'palette', label: '공간 환경' },
   { id: 'furniture', icon: 'couch', label: '가구 리스트' },
   { id: 'ai', icon: 'sparkle', label: 'AI 배치 추천' },
 ];
@@ -29,12 +30,12 @@ const SideNav = ({ activeNav, onNavClick }: Props) => {
 
       {/* 네비게이션 버튼 */}
       <div className="col flex-1 items-center justify-center gap-8 p-12 border-r border-gray-400">
-        {navItems.map((item, index) => {
+        {navItems.map((item) => {
           const isActive = activeNav === item.id;
           return (
             <div key={item.id} className="col w-full items-center gap-8">
               {/* AI 배치 추천 위 구분선 */}
-              {index === 2 && <div className="h-px w-full bg-gray-400" />}
+              {item.id === 'ai' && <div className="h-px w-full bg-gray-400" />}
               <button
                 onClick={() => onNavClick(item.id)}
                 className={[

@@ -1,1 +1,1 @@
-export type NavId = 'drawing' | 'furniture' | 'ai';
+export type NavId = 'drawing' | 'environment' | 'furniture' | 'ai';

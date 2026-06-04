@@ -14,6 +14,7 @@ export type IconName =
   | 'cube'
   | 'couch'
   | 'sparkle'
+  | 'palette'
   | 'arrow-back'
   | 'arrow-undo'
   | 'save'
