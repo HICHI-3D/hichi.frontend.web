@@ -55,9 +55,9 @@ const Header = ({ editor }: Props) => {
           </div>
         </div>
 
-        <button className="col flex-center gap-4 rounded-8 bg-functional-indigo-20 px-12 py-6 transition-colors hover:bg-functional-indigo-40">
+        <button className="col flex-center gap-4 rounded-8 bg-functional-indigo px-12 py-6 transition-colors hover:bg-functional-indigo-40">
           <Icon name="save" alt="저장" className="size-28" />
-          <span className="label-m text-functional-indigo">저장</span>
+          <span className="label-m text-gray-200">저장</span>
         </button>
 
         <button className="col flex-center w-[60px] gap-4 rounded-8 px-4 py-6 transition-colors hover:bg-gray-300">
