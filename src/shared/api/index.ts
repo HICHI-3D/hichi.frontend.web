@@ -110,6 +110,29 @@ export const listFurniture = async (): Promise<FurnitureRecord[]> => {
   return response.json();
 };
 
+export type FurnitureCreateBody = {
+  name: string;
+  category?: string;
+  width_mm?: number;
+  depth_mm?: number;
+  height_mm?: number;
+};
+
+export const createFurniture = async (
+  body: FurnitureCreateBody,
+): Promise<FurnitureRecord> => {
+  const response = await fetch(`${config.apiBaseUrl}/api/furniture/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) {
+    const text = await response.text().catch(() => '');
+    throw new Error(`가구 추가 실패 (${response.status}): ${text}`);
+  }
+  return response.json();
+};
+
 export const cancelFurnitureScan = async (
   id: number,
 ): Promise<FurnitureRecord> => {

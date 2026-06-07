@@ -60,6 +60,12 @@
 }
 
 /* ── Layout utilities ─────────────────────── */
+@utility no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}
+
 @utility flex-center {
   display: flex;
   align-items: center;
