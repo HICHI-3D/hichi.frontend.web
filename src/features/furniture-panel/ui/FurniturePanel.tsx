@@ -93,7 +93,7 @@ const FurniturePanel = ({ }: { onClose: () => void }) => {
 
   return (
     <>
-      <aside className="col h-full w-[284px] shrink-0 overflow-hidden bg-gray-150 border-r border-gray-400 rounded-r-8">
+      <aside className="col self-stretch w-[284px] shrink-0 overflow-hidden bg-gray-150 border-r border-gray-400 rounded-r-8">
         {/* 헤더 */}
         <div className="flex shrink-0 items-center justify-between px-16 py-16">
           <span className="body-s text-black">가구 리스트</span>
@@ -108,40 +108,41 @@ const FurniturePanel = ({ }: { onClose: () => void }) => {
         </div>
         <div className="h-px w-full shrink-0 bg-gray-400" />
 
-        <div className="col flex-1 gap-12 overflow-hidden px-12 py-8 ">
-          <div className="col shrink-0 gap-12 overflow-y-auto no-scrollbar">
-            <div className="flex items-center">
-              {tabs.map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={[
-                    'px-6 py-6 label-m transition-colors cursor-pointer',
-                    activeTab === tab
-                      ? 'text-functional-indigo border-b-2 border-functional-indigo'
-                      : 'text-black',
-                  ].join(' ')}
-                >
-                  {tab}
-                </button>
-              ))}
-            </div>
-            <div className="flex items-center gap-8 rounded-8 bg-gray-200 p-12 border border-gray-400">
-              <span className="shrink-0 text-gray-500"><SearchIcon /></span>
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="가구명을 입력하세요"
-                className="flex-1 bg-transparent label-m text-gray-500 outline-none placeholder:text-gray-500"
-              />
-            </div>
+        {/* 탭 + 검색 — 고정 영역 */}
+        <div className="col shrink-0 gap-12 px-12 pt-8">
+          <div className="flex items-center">
+            {tabs.map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={[
+                  'px-6 py-6 label-m transition-colors cursor-pointer',
+                  activeTab === tab
+                    ? 'text-functional-indigo border-b-2 border-functional-indigo'
+                    : 'text-black',
+                ].join(' ')}
+              >
+                {tab}
+              </button>
+            ))}
           </div>
-          <div className="h-px w-full shrink-0 bg-gray-400" />
+          <div className="flex items-center gap-8 rounded-8 bg-gray-200 p-12 border border-gray-400">
+            <span className="shrink-0 text-gray-500"><SearchIcon /></span>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="가구명을 입력하세요"
+              className="flex-1 bg-transparent label-m text-gray-500 outline-none placeholder:text-gray-500"
+            />
+          </div>
+        </div>
+        <div className="h-px w-full shrink-0 bg-gray-400" />
 
-          {loadError && <p className="label-s text-red-500">목록 로드 실패: {loadError}</p>}
-
-          <div className="grid grid-cols-2 gap-12 overflow-y-auto no-scrollbar">
+        {/* 가구 목록 — 스크롤 영역 */}
+        <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar px-12 pb-8 pt-12">
+          {loadError && <p className="label-s text-red-500 mb-8">목록 로드 실패: {loadError}</p>}
+          <div className="grid grid-cols-2 gap-12 content-start">
             {displayItems.map((item: any) => {
               const isMock  = item.isMock;
               const isReady = isMock || item.scan_status === 'completed';

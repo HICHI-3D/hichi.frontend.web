@@ -19,3 +19,4 @@ export { useEditor } from './model/useEditor';
 export { default as FurniturePropertiesPanel } from './ui/FurniturePropertiesPanel';
 export { default as Scene3DCanvas } from './ui/Scene3DCanvas';
 export { default as SimulationCanvas } from './ui/SimulationCanvas';
+export { default as SpaceScoreChip } from './ui/SpaceScoreChip';

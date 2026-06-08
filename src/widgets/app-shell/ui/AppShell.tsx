@@ -6,6 +6,7 @@ import {
   parsedToShapes,
   Scene3DCanvas,
   SimulationCanvas,
+  SpaceScoreChip,
   toolLabelToMode,
   useEditor,
 } from '@features/simulation-canvas';
@@ -185,7 +186,7 @@ const AppShell = () => {
       <SideNav activeNav={activeNav} onNavClick={handleNavClick} />
       <div className="min-w-0 col flex-1">
         <Header editor={editor} />
-        <div className="min-h-0 flex flex-1 bg-gray-100">
+        <div className="min-h-0 flex flex-1 bg-gray-100 overflow-hidden">
           {isPanelOpen && activeNav === 'drawing' && (
             <DrawingPanel
               activeTool={activeTool}
@@ -215,6 +216,10 @@ const AppShell = () => {
               {/* 2D 모드에서 선택된 가구의 치수/회전 입력 */}
               {editor.viewMode === '2D' && (
                 <FurniturePropertiesPanel editor={editor} />
+              )}
+              {/* 공간 점수 칩 — 방 폴리곤이 있을 때만 표시 */}
+              {editor.viewMode === '2D' && (
+                <SpaceScoreChip editor={editor} />
               )}
             </div>
             <FooterNav editor={editor} onFitView={fitToView} onScreenshot={handleScreenshot} />
