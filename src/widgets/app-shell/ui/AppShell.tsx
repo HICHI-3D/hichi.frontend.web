@@ -1,4 +1,5 @@
 import { DrawingPanel } from '@features/drawing-panel';
+import { FurnitureSuggestionPanel } from '@features/furniture-suggestion';
 import { FurniturePanel } from '@features/furniture-panel';
 import { RoomEnvironmentPanel } from '@features/room-environment';
 import {
@@ -10,6 +11,7 @@ import {
   toolLabelToMode,
   useEditor,
 } from '@features/simulation-canvas';
+import { listFurniture, recommendLayout } from '@shared/api';
 import { uploadFloorPlan } from '@shared/api';
 import { config } from '@shared/config';
 import { FooterNav } from '@widgets/footer-nav';
@@ -98,6 +100,10 @@ const AppShell = () => {
   }, [activeTool]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleNavClick = (id: NavId) => {
+    if (id === 'ai') {
+      void handleAILayout();
+      return;
+    }
     if (activeNav === id) {
       setActiveNav(null);
       setActiveTool(null);
@@ -176,14 +182,101 @@ const AppShell = () => {
     [editor],
   );
 
+  // ── AI 배치 추천 ─────────────────────────────────────────────────
+  const [aiLayoutLoading, setAiLayoutLoading] = useState(false);
+
+  /** wall/room shapes 의 bounding box → 방 크기(mm) */
+  const getRoomBounds = () => {
+    const pts: { x: number; y: number }[] = [];
+    for (const s of editor.shapes) {
+      if (s.type === 'wall') { pts.push(s.start, s.end); }
+      else if (s.type === 'room' || s.type === 'region') { pts.push(...s.points); }
+    }
+    if (pts.length < 2) return null;
+    const xs = pts.map((p) => p.x);
+    const ys = pts.map((p) => p.y);
+    return {
+      width_mm: Math.max(...xs) - Math.min(...xs),
+      depth_mm: Math.max(...ys) - Math.min(...ys),
+      originX: Math.min(...xs),
+      originY: Math.min(...ys),
+    };
+  };
+
+  const CATEGORY_COLORS: Record<string, string> = {
+    sofa: '#4f46e5', table: '#92400e', chair: '#64748b',
+    bed: '#b45309', bookshelf: '#78716c', 'tv-stand': '#44403c',
+  };
+
+  const MOCK_FURNITURE = [
+    { type: 'sofa',      name: '3인 소파',     width_mm: 2100, depth_mm: 900  },
+    { type: 'table',     name: '다이닝 테이블', width_mm: 1400, depth_mm: 800  },
+    { type: 'chair',     name: '다이닝 의자',   width_mm: 450,  depth_mm: 450  },
+    { type: 'bed',       name: '퀸 침대',       width_mm: 1600, depth_mm: 2100 },
+    { type: 'bookshelf', name: '책장',          width_mm: 800,  depth_mm: 350  },
+    { type: 'tv-stand',  name: 'TV 스탠드',     width_mm: 1500, depth_mm: 450  },
+  ];
+
+  const handleAILayout = useCallback(async () => {
+    const bounds = getRoomBounds();
+    if (!bounds) { alert('벽이나 방을 먼저 그려주세요.'); return; }
+
+    setAiLayoutLoading(true);
+    try {
+      // API 가구 + mock 가구 합산
+      const apiItems = await listFurniture();
+      const ready = apiItems
+        .filter((f) => f.scan_status === 'completed')
+        .map((f) => ({
+          type: f.category ?? 'chair',
+          name: f.name,
+          width_mm: f.width_mm ?? 600,
+          depth_mm: f.depth_mm ?? 600,
+        }));
+      const furniture = ready.length > 0 ? ready : MOCK_FURNITURE;
+
+      const result = await recommendLayout({
+        room_width_mm: bounds.width_mm,
+        room_depth_mm: bounds.depth_mm,
+        furniture,
+      });
+
+      if (result.source === 'rules') {
+        // quota 초과 시 토스트 대신 콘솔만 — UX 방해 없이
+        console.info('[AI 배치] Gemini quota 초과 → 규칙 기반 배치 적용');
+      }
+
+      // 기존 배치 제거 후 추천 배치 적용
+      for (const f of editor.placedFurniture) { editor.removeFurniture(f.id); }
+
+      for (const p of result.placements) {
+        editor.addFurniture({
+          type: p.type as any,
+          name: p.name,
+          position: { x: bounds.originX + p.position.x, y: bounds.originY + p.position.y },
+          rotation: p.rotation,
+          width: p.width_mm,
+          depth: p.depth_mm,
+          height: 800,
+          color: CATEGORY_COLORS[p.type] ?? '#64748b',
+        });
+      }
+    } catch (e) {
+      alert(`AI 배치 실패: ${e instanceof Error ? e.message : String(e)}`);
+    } finally {
+      setAiLayoutLoading(false);
+    }
+  }, [editor]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const isPanelOpen =
     activeNav === 'drawing' ||
     activeNav === 'environment' ||
-    activeNav === 'furniture';
+    activeNav === 'furniture' ||
+    activeNav === 'suggest';
 
   return (
     <div className="flex size-full">
-      <SideNav activeNav={activeNav} onNavClick={handleNavClick} />
+      <SideNav activeNav={activeNav} onNavClick={handleNavClick} loadingNav={aiLayoutLoading ? 'ai' : null} />
       <div className="min-w-0 col flex-1">
         <Header editor={editor} />
         <div className="min-h-0 flex flex-1 bg-gray-100 overflow-hidden">
@@ -205,6 +298,9 @@ const AppShell = () => {
           )}
           {isPanelOpen && activeNav === 'furniture' && (
             <FurniturePanel onClose={handleClosePanel} />
+          )}
+          {isPanelOpen && activeNav === 'suggest' && (
+            <FurnitureSuggestionPanel editor={editor} onClose={handleClosePanel} />
           )}
           <div className="min-w-0 min-h-0 w-full col flex-1 relative">
             <div ref={canvasAreaRef} className="min-h-0 flex-1 relative">

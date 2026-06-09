@@ -144,3 +144,75 @@ export const cancelFurnitureScan = async (
   }
   return response.json();
 };
+
+// ─── AI 배치 추천 ──────────────────────────────────────────────────
+
+export type LayoutFurnitureInput = {
+  type: string;
+  name: string;
+  width_mm: number;
+  depth_mm: number;
+};
+
+export type LayoutRequest = {
+  room_width_mm: number;
+  room_depth_mm: number;
+  furniture: LayoutFurnitureInput[];
+};
+
+export type FurniturePlacement = {
+  type: string;
+  name: string;
+  width_mm: number;
+  depth_mm: number;
+  position: { x: number; y: number };
+  rotation: number;
+};
+
+export type LayoutResponse = {
+  placements: FurniturePlacement[];
+  source: 'ai' | 'rules';
+};
+
+export const recommendLayout = async (body: LayoutRequest): Promise<LayoutResponse> => {
+  const response = await fetch(`${config.apiBaseUrl}/api/recommendations/layout`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) {
+    const text = await response.text().catch(() => '');
+    throw new Error(`AI 배치 추천 실패 (${response.status}): ${text}`);
+  }
+  return response.json();
+};
+
+// ─── 중고 매물 검색 ────────────────────────────────────────────
+
+export type SecondhandItem = {
+  title: string;
+  price: string;
+  source: string;
+  link: string;
+  thumbnail: string | null;
+};
+
+export type SecondhandResponse = {
+  items: SecondhandItem[];
+  source: 'api' | 'mock';
+  query: string;
+};
+
+export const searchSecondhand = async (
+  query: string,
+  furnitureType: string = '',
+  count: number = 4,
+): Promise<SecondhandResponse> => {
+  const params = new URLSearchParams({ query, furniture_type: furnitureType, count: String(count) });
+  const response = await fetch(`${config.apiBaseUrl}/api/secondhand/?${params}`);
+  if (!response.ok) {
+    const text = await response.text().catch(() => '');
+    throw new Error(`중고 검색 실패 (${response.status}): ${text}`);
+  }
+  return response.json();
+};
