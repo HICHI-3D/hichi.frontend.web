@@ -100,7 +100,7 @@ const FurniturePanel = ({ }: { onClose: () => void }) => {
           <button
             type="button"
             onClick={() => setAddOpen(true)}
-            className="flex items-center gap-4 rounded-8 bg-functional-indigo px-10 py-6 label-s text-white hover:opacity-90 transition-opacity"
+            className="flex items-center gap-4 rounded-8 bg-functional-indigo px-6 py-4 label-s text-white hover:opacity-90 transition-opacity"
           >
             <PlusIcon />
             추가
