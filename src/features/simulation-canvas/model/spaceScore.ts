@@ -13,6 +13,19 @@ const polygonArea = (points: { x: number; y: number }[]): number => {
   return Math.abs(area) / 2;
 };
 
+/** Collect all key points from shapes for bounding-box estimation. */
+const collectPoints = (shapes: Shape[]): { x: number; y: number }[] => {
+  const pts: { x: number; y: number }[] = [];
+  for (const s of shapes) {
+    if (s.type === 'wall') {
+      pts.push(s.start, s.end);
+    } else if (s.type === 'room' || s.type === 'region') {
+      pts.push(...s.points);
+    }
+  }
+  return pts;
+};
+
 export type SpaceScore = {
   utilizationPct: number; // furniture footprint / room area * 100
   corridorOk: boolean;    // heuristic: utilization < 70%
@@ -21,18 +34,31 @@ export type SpaceScore = {
   gradeColor: string;     // hex for chip accent
 };
 
-/** Returns null when no room polygon exists yet. */
+/** Returns null when no wall/room shapes exist yet. */
 export const calcSpaceScore = (
   shapes: Shape[],
   placedFurniture: FurnitureInstance[],
 ): SpaceScore | null => {
+  // Prefer explicit room polygons; fall back to bounding box of wall segments
   const roomShapes = shapes.filter((s) => s.type === 'room');
-  if (roomShapes.length === 0) return null;
+  let roomArea = 0;
 
-  const roomArea = roomShapes.reduce((sum, s) => {
-    if (s.type !== 'room') return sum;
-    return sum + polygonArea(s.points);
-  }, 0);
+  if (roomShapes.length > 0) {
+    roomArea = roomShapes.reduce((sum, s) => {
+      if (s.type !== 'room') return sum;
+      return sum + polygonArea(s.points);
+    }, 0);
+  } else {
+    // Bounding box of all wall endpoints
+    const pts = collectPoints(shapes);
+    if (pts.length < 2) return null;
+    const xs = pts.map((p) => p.x);
+    const ys = pts.map((p) => p.y);
+    const w = Math.max(...xs) - Math.min(...xs);
+    const h = Math.max(...ys) - Math.min(...ys);
+    roomArea = w * h;
+  }
+
   if (roomArea === 0) return null;
 
   const furnitureArea = placedFurniture.reduce(
